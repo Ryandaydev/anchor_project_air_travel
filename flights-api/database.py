@@ -7,7 +7,7 @@ from sqlalchemy.pool import NullPool
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://anchor_user:anchor_password@localhost:5432/anchor_db",
+    "postgresql+asyncpg://anchor_user:xxxx@localhost:5432/anchor_db",
 )
 
 engine = create_async_engine(
