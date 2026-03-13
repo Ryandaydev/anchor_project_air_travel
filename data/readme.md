@@ -30,7 +30,9 @@ import pandas as pd
 df = pd.read_csv('data/carrier_on_time_data.csv')
 ```
 
-Source and license:
+#### Source and license
+
+Downloaded from this website:
 https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGK&QO_fu146_anzr=b0-gvzr
 
 US Government data is by default in the public domain:
