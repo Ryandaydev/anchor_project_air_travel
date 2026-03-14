@@ -79,9 +79,7 @@ async def test_search_flights_with_no_params_returns_list():
         response = await ac.get("/v0/flights")
 
     assert response.status_code == 200
-
-    data = response.json()
-    assert isinstance(data, list)
+    assert isinstance(response.json(), list)
 
 
 @pytest.mark.asyncio
@@ -107,26 +105,46 @@ async def test_search_flights_honors_limit_param():
 
 
 @pytest.mark.asyncio
-async def test_search_flights_honors_skip_param():
+async def test_search_flights_uses_stable_ordering_for_pagination():
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
     ) as ac:
-        response = await ac.get(
+        first_response = await ac.get(
             "/v0/flights",
             params={
                 "carrier": "UA",
                 "flight_date": "2025-11-12",
-                "skip": 1,
-                "limit": 1,
+                "skip": 0,
+                "limit": 2,
             },
         )
 
-    assert response.status_code == 200
+        second_response = await ac.get(
+            "/v0/flights",
+            params={
+                "carrier": "UA",
+                "flight_date": "2025-11-12",
+                "skip": 2,
+                "limit": 2,
+            },
+        )
 
-    data = response.json()
-    assert isinstance(data, list)
-    assert len(data) <= 1
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+
+    first_page = first_response.json()
+    second_page = second_response.json()
+
+    first_ids = [flight["id"] for flight in first_page]
+    second_ids = [flight["id"] for flight in second_page]
+
+    assert first_ids == sorted(first_ids)
+    assert second_ids == sorted(second_ids)
+
+    if first_ids and second_ids:
+        assert first_ids[-1] < second_ids[0]
+        assert set(first_ids).isdisjoint(second_ids)
 
 
 @pytest.mark.asyncio

@@ -31,32 +31,25 @@ async def test_search_flights_returns_sample_row(db_session):
 
     flight = flights[0]
 
-    # identity
     assert flight.flight_date == SAMPLE_FLIGHT_DATE
     assert flight.iata_code_marketing_airline == "UA"
     assert flight.flight_number_marketing_airline == "4712"
 
-    # route
     assert flight.origin == "ORD"
     assert flight.origin_city_name == "Chicago, IL"
     assert flight.dest == "ELP"
     assert flight.dest_city_name == "El Paso, TX"
 
-    # scheduled times
     assert flight.crs_dep_time == "2005"
-    assert flight.crs_arr_time == "2253"
-
-    # actual operation
     assert flight.dep_time == "2004"
+    assert flight.crs_arr_time == "2253"
     assert flight.arr_time == "2313"
 
-    # traveler-interest status fields
     assert float(flight.dep_delay_minutes) == 0.0
     assert float(flight.arr_delay_minutes) == 20.0
     assert float(flight.cancelled) == 0.0
     assert float(flight.diverted) == 0.0
 
-    # operating-carrier detail
     assert flight.operating_airline == "OO"
     assert flight.iata_code_operating_airline == "OO"
     assert flight.tail_number == "N135SY"
@@ -79,7 +72,6 @@ async def test_search_flights_honors_limit(db_session):
     flights = await crud.search_flights(
         db=db_session,
         carrier=SAMPLE_CARRIER,
-        flight_number=SAMPLE_FLIGHT_NUMBER,
         flight_date=SAMPLE_FLIGHT_DATE,
         skip=0,
         limit=1,
@@ -89,14 +81,29 @@ async def test_search_flights_honors_limit(db_session):
 
 
 @pytest.mark.asyncio
-async def test_search_flights_honors_skip(db_session):
-    flights = await crud.search_flights(
+async def test_search_flights_uses_stable_ordering_for_pagination(db_session):
+    first_page = await crud.search_flights(
         db=db_session,
         carrier=SAMPLE_CARRIER,
         flight_date=SAMPLE_FLIGHT_DATE,
-        skip=1,
-        limit=1,
+        skip=0,
+        limit=2,
     )
 
-    assert isinstance(flights, list)
-    assert len(flights) <= 1
+    second_page = await crud.search_flights(
+        db=db_session,
+        carrier=SAMPLE_CARRIER,
+        flight_date=SAMPLE_FLIGHT_DATE,
+        skip=2,
+        limit=2,
+    )
+
+    first_ids = [flight.id for flight in first_page]
+    second_ids = [flight.id for flight in second_page]
+
+    assert first_ids == sorted(first_ids)
+    assert second_ids == sorted(second_ids)
+
+    if first_ids and second_ids:
+        assert first_ids[-1] < second_ids[0]
+        assert set(first_ids).isdisjoint(second_ids)

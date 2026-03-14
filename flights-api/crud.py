@@ -25,6 +25,7 @@ async def search_flights(
     if flight_date:
         stmt = stmt.where(Flight.flight_date == flight_date)
 
+    stmt = stmt.order_by(Flight.id)
     stmt = stmt.offset(skip).limit(limit)
 
     result = await db.execute(stmt)
