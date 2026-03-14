@@ -16,16 +16,20 @@ async def db_session():
     async with AsyncSessionLocal() as session:
         yield session
 
+
 @pytest.mark.asyncio
-async def test_get_flight_by_carrier_flight_number_and_date(db_session):
-    flight = await crud.get_flight_by_carrier_flight_number_and_date(
+async def test_search_flights_returns_sample_row(db_session):
+    flights = await crud.search_flights(
         db=db_session,
         carrier=SAMPLE_CARRIER,
         flight_number=SAMPLE_FLIGHT_NUMBER,
         flight_date=SAMPLE_FLIGHT_DATE,
     )
 
-    assert flight is not None
+    assert flights is not None
+    assert len(flights) >= 1
+
+    flight = flights[0]
 
     # identity
     assert flight.flight_date == SAMPLE_FLIGHT_DATE
@@ -59,12 +63,40 @@ async def test_get_flight_by_carrier_flight_number_and_date(db_session):
 
 
 @pytest.mark.asyncio
-async def test_get_flight_returns_none_for_missing_match(db_session):
-    flight = await crud.get_flight_by_carrier_flight_number_and_date(
+async def test_search_flights_returns_empty_list_for_missing_match(db_session):
+    flights = await crud.search_flights(
         db=db_session,
         carrier="UA",
         flight_number="9999",
         flight_date=SAMPLE_FLIGHT_DATE,
     )
 
-    assert flight is None
+    assert flights == []
+
+
+@pytest.mark.asyncio
+async def test_search_flights_honors_limit(db_session):
+    flights = await crud.search_flights(
+        db=db_session,
+        carrier=SAMPLE_CARRIER,
+        flight_number=SAMPLE_FLIGHT_NUMBER,
+        flight_date=SAMPLE_FLIGHT_DATE,
+        skip=0,
+        limit=1,
+    )
+
+    assert len(flights) <= 1
+
+
+@pytest.mark.asyncio
+async def test_search_flights_honors_skip(db_session):
+    flights = await crud.search_flights(
+        db=db_session,
+        carrier=SAMPLE_CARRIER,
+        flight_date=SAMPLE_FLIGHT_DATE,
+        skip=1,
+        limit=1,
+    )
+
+    assert isinstance(flights, list)
+    assert len(flights) <= 1

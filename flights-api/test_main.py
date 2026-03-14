@@ -82,3 +82,62 @@ async def test_search_flights_with_no_params_returns_list():
 
     data = response.json()
     assert isinstance(data, list)
+
+
+@pytest.mark.asyncio
+async def test_search_flights_honors_limit_param():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        response = await ac.get(
+            "/v0/flights",
+            params={
+                "carrier": "UA",
+                "flight_date": "2025-11-12",
+                "limit": 1,
+            },
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) <= 1
+
+
+@pytest.mark.asyncio
+async def test_search_flights_honors_skip_param():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        response = await ac.get(
+            "/v0/flights",
+            params={
+                "carrier": "UA",
+                "flight_date": "2025-11-12",
+                "skip": 1,
+                "limit": 1,
+            },
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) <= 1
+
+
+@pytest.mark.asyncio
+async def test_search_flights_rejects_invalid_limit():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        response = await ac.get(
+            "/v0/flights",
+            params={"limit": 0},
+        )
+
+    assert response.status_code == 422

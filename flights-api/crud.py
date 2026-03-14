@@ -11,7 +11,9 @@ async def search_flights(
     carrier: str | None = None,
     flight_number: str | None = None,
     flight_date: date | None = None,
-):
+    skip: int = 0,
+    limit: int = 100,
+) -> list[Flight]:
     stmt = select(Flight)
 
     if carrier:
@@ -23,5 +25,7 @@ async def search_flights(
     if flight_date:
         stmt = stmt.where(Flight.flight_date == flight_date)
 
-    result = await db.execute(stmt.limit(20))
-    return result.scalars().all()
+    stmt = stmt.offset(skip).limit(limit)
+
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
