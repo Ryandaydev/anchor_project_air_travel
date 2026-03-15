@@ -146,3 +146,4 @@ It exists to demonstrate:
 -   async PostgreSQL access
 -   paginated search endpoints
 -   concurrent client request patterns
+        
