@@ -1,30 +1,31 @@
-"""Asynchronous Flight Arrival Delay Inference API.
-
-This API adapts the async job architecture from the earlier example API
-to the Anchor Project's flight arrival delay quantile models.
+"""Asynchronous Flight Arrival Delay Inference API backed by PostgreSQL.
 
 Expected model artifacts in the same working directory:
 - flight_arrdelay_model_10.onnx
 - flight_arrdelay_model_50.onnx
 - flight_arrdelay_model_90.onnx
 
+Database setup:
+- Set DATABASE_URL to your PostgreSQL async SQLAlchemy URL.
+- Run the DDL in flight_inference_jobs.sql before starting the API.
+
 Run:
     uvicorn flights_inference_api_main:app --reload
 """
 
-from datetime import datetime, timezone
-from typing import Literal, Optional
+from datetime import datetime
+from typing import Literal
 from uuid import uuid4
-import json
-import sqlite3
 
 import httpx
 import numpy as np
 import onnxruntime as rt
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Response, status
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Response, status
 from pydantic import BaseModel, HttpUrl
-from starlette.concurrency import run_in_threadpool
+from sqlalchemy.ext.asyncio import AsyncSession
 
+import crud
+from database import AsyncSessionLocal, get_db
 from schemas import FlightDelayPredictionOutput, FlightInferenceFeatures
 
 api_description = """
@@ -49,7 +50,6 @@ Submit inference jobs, check job status, inspect the original request,
 and retrieve completed results.
 """
 
-DB_PATH = "flight_inference_jobs.db"
 MODEL_10_PATH = "flight_arrdelay_model_10.onnx"
 MODEL_50_PATH = "flight_arrdelay_model_50.onnx"
 MODEL_90_PATH = "flight_arrdelay_model_90.onnx"
@@ -68,7 +68,7 @@ label_name_90 = None
 
 class InferenceJobRequest(BaseModel):
     features: FlightInferenceFeatures
-    webhook_url: Optional[HttpUrl] = None
+    webhook_url: HttpUrl | None = None
 
 
 class InferenceJobAccepted(BaseModel):
@@ -80,12 +80,13 @@ class InferenceJobStatus(BaseModel):
     job_id: str
     status: Literal["queued", "running", "succeeded", "failed"]
     created_at: str
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
-    webhook_url: Optional[str] = None
+    started_at: str | None = None
+    completed_at: str | None = None
+    webhook_url: str | None = None
     webhook_sent: bool
-    webhook_status_code: Optional[int] = None
-    error_text: Optional[str] = None
+    webhook_status_code: int | None = None
+    error_text: str | None = None
+    webhook_error_text: str | None = None
 
 
 class InferenceJobResult(BaseModel):
@@ -99,7 +100,7 @@ class InferenceJobRequestView(BaseModel):
     job_id: str
     status: Literal["queued", "running", "succeeded", "failed"]
     request: FlightInferenceFeatures
-    webhook_url: Optional[str] = None
+    webhook_url: str | None = None
     created_at: str
 
 
@@ -111,158 +112,20 @@ class DeleteJobResponse(BaseModel):
 app = FastAPI(
     description=api_description,
     title="Asynchronous Flight Arrival Delay Inference API",
-    version="0.2.0",
+    version="0.3.0",
 )
 
 
-def utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def initialize_database() -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS inference_jobs (
-                job_id TEXT PRIMARY KEY,
-                status TEXT NOT NULL,
-                request_json TEXT NOT NULL,
-                result_json TEXT,
-                error_text TEXT,
-                webhook_url TEXT,
-                webhook_sent INTEGER NOT NULL DEFAULT 0,
-                webhook_status_code INTEGER,
-                webhook_error_text TEXT,
-                created_at TEXT NOT NULL,
-                started_at TEXT,
-                completed_at TEXT
-            )
-            """
-        )
-        conn.commit()
-
-
-def create_job_record(
-    job_id: str,
-    request_json: str,
-    webhook_url: Optional[str],
-) -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
-            INSERT INTO inference_jobs (
-                job_id, status, request_json, webhook_url, created_at
-            )
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (job_id, "queued", request_json, webhook_url, utc_now_iso()),
-        )
-        conn.commit()
-
-
-def update_job_running(job_id: str) -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
-            UPDATE inference_jobs
-            SET status = ?, started_at = ?
-            WHERE job_id = ?
-            """,
-            ("running", utc_now_iso(), job_id),
-        )
-        conn.commit()
-
-
-def update_job_succeeded(job_id: str, result_json: str) -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
-            UPDATE inference_jobs
-            SET status = ?, result_json = ?, completed_at = ?, error_text = NULL
-            WHERE job_id = ?
-            """,
-            ("succeeded", result_json, utc_now_iso(), job_id),
-        )
-        conn.commit()
-
-
-def update_job_failed(job_id: str, error_text: str) -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
-            UPDATE inference_jobs
-            SET status = ?, error_text = ?, completed_at = ?
-            WHERE job_id = ?
-            """,
-            ("failed", error_text, utc_now_iso(), job_id),
-        )
-        conn.commit()
-
-
-def update_webhook_delivery(
-    job_id: str,
-    sent: bool,
-    status_code: Optional[int] = None,
-    error_text: Optional[str] = None,
-) -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
-            UPDATE inference_jobs
-            SET webhook_sent = ?, webhook_status_code = ?, webhook_error_text = ?
-            WHERE job_id = ?
-            """,
-            (1 if sent else 0, status_code, error_text, job_id),
-        )
-        conn.commit()
-
-
-def fetch_job(job_id: str) -> Optional[sqlite3.Row]:
-    with get_connection() as conn:
-        row = conn.execute(
-            """
-            SELECT
-                job_id,
-                status,
-                request_json,
-                result_json,
-                error_text,
-                webhook_url,
-                webhook_sent,
-                webhook_status_code,
-                webhook_error_text,
-                created_at,
-                started_at,
-                completed_at
-            FROM inference_jobs
-            WHERE job_id = ?
-            """,
-            (job_id,),
-        ).fetchone()
-        return row
-
-
-def delete_job_record(job_id: str) -> bool:
-    with get_connection() as conn:
-        cursor = conn.execute("DELETE FROM inference_jobs WHERE job_id = ?", (job_id,))
-        conn.commit()
-        return cursor.rowcount > 0
+def _iso_or_none(value: datetime | None) -> str | None:
+    return value.isoformat() if value is not None else None
 
 
 @app.on_event("startup")
-def load_models_and_initialize_db() -> None:
+def load_models() -> None:
     global sess_10, sess_50, sess_90
     global input_name_10, label_name_10
     global input_name_50, label_name_50
     global input_name_90, label_name_90
-
-    initialize_database()
 
     sess_options = rt.SessionOptions()
     sess_options.intra_op_num_threads = 1
@@ -353,39 +216,50 @@ async def send_webhook(
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             response = await client.post(webhook_url, json=payload)
-        await run_in_threadpool(
-            update_webhook_delivery,
-            job_id,
-            response.is_success,
-            response.status_code,
-            None if response.is_success else response.text[:1000],
-        )
+
+        async with AsyncSessionLocal() as db:
+            await crud.update_webhook_delivery(
+                db=db,
+                job_id=job_id,
+                sent=response.is_success,
+                status_code=response.status_code,
+                error_text=None if response.is_success else response.text[:1000],
+            )
     except Exception as exc:
-        await run_in_threadpool(
-            update_webhook_delivery,
-            job_id,
-            False,
-            None,
-            str(exc),
-        )
+        async with AsyncSessionLocal() as db:
+            await crud.update_webhook_delivery(
+                db=db,
+                job_id=job_id,
+                sent=False,
+                status_code=None,
+                error_text=str(exc),
+            )
 
 
 async def process_job(
     job_id: str,
     features: FlightInferenceFeatures,
-    webhook_url: Optional[str],
+    webhook_url: str | None,
 ) -> None:
-    await run_in_threadpool(update_job_running, job_id)
+    async with AsyncSessionLocal() as db:
+        await crud.update_job_running(db=db, job_id=job_id)
 
     try:
-        result = await run_in_threadpool(run_prediction, features)
-        await run_in_threadpool(update_job_succeeded, job_id, json.dumps(result.model_dump()))
+        result = run_prediction(features)
+
+        async with AsyncSessionLocal() as db:
+            await crud.update_job_succeeded(
+                db=db,
+                job_id=job_id,
+                result_payload=result.model_dump(),
+            )
 
         if webhook_url is not None:
             await send_webhook(job_id, webhook_url, result)
 
     except Exception as exc:
-        await run_in_threadpool(update_job_failed, job_id, str(exc))
+        async with AsyncSessionLocal() as db:
+            await crud.update_job_failed(db=db, job_id=job_id, error_text=str(exc))
 
 
 @app.post(
@@ -401,14 +275,15 @@ async def process_job(
 async def submit_inference_job(
     request: InferenceJobRequest,
     background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
 ) -> InferenceJobAccepted:
     job_id = str(uuid4())
 
-    await run_in_threadpool(
-        create_job_record,
-        job_id,
-        request.features.model_dump_json(by_alias=True),
-        str(request.webhook_url) if request.webhook_url is not None else None,
+    await crud.create_job_record(
+        db=db,
+        job_id=job_id,
+        request_payload=request.features.model_dump(by_alias=True),
+        webhook_url=str(request.webhook_url) if request.webhook_url is not None else None,
     )
 
     background_tasks.add_task(
@@ -429,21 +304,25 @@ async def submit_inference_job(
     operation_id="v0_get_inference_job_status",
     tags=["inference jobs"],
 )
-async def get_inference_job_status(job_id: str) -> InferenceJobStatus:
-    row = await run_in_threadpool(fetch_job, job_id)
-    if row is None:
+async def get_inference_job_status(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> InferenceJobStatus:
+    job = await crud.fetch_job(db=db, job_id=job_id)
+    if job is None:
         raise HTTPException(status_code=404, detail="Inference job not found")
 
     return InferenceJobStatus(
-        job_id=row["job_id"],
-        status=row["status"],
-        created_at=row["created_at"],
-        started_at=row["started_at"],
-        completed_at=row["completed_at"],
-        webhook_url=row["webhook_url"],
-        webhook_sent=bool(row["webhook_sent"]),
-        webhook_status_code=row["webhook_status_code"],
-        error_text=row["error_text"],
+        job_id=job.job_id,
+        status=job.status,
+        created_at=job.created_at.isoformat(),
+        started_at=_iso_or_none(job.started_at),
+        completed_at=_iso_or_none(job.completed_at),
+        webhook_url=job.webhook_url,
+        webhook_sent=job.webhook_sent,
+        webhook_status_code=job.webhook_status_code,
+        error_text=job.error_text,
+        webhook_error_text=job.webhook_error_text,
     )
 
 
@@ -455,18 +334,20 @@ async def get_inference_job_status(job_id: str) -> InferenceJobStatus:
     operation_id="v0_get_inference_job_request",
     tags=["inference jobs"],
 )
-async def get_inference_job_request(job_id: str) -> InferenceJobRequestView:
-    row = await run_in_threadpool(fetch_job, job_id)
-    if row is None:
+async def get_inference_job_request(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> InferenceJobRequestView:
+    job = await crud.fetch_job(db=db, job_id=job_id)
+    if job is None:
         raise HTTPException(status_code=404, detail="Inference job not found")
 
-    request_payload = json.loads(row["request_json"])
     return InferenceJobRequestView(
-        job_id=row["job_id"],
-        status=row["status"],
-        request=FlightInferenceFeatures.model_validate(request_payload),
-        webhook_url=row["webhook_url"],
-        created_at=row["created_at"],
+        job_id=job.job_id,
+        status=job.status,
+        request=FlightInferenceFeatures.model_validate(job.request_json),
+        webhook_url=job.webhook_url,
+        created_at=job.created_at.isoformat(),
     )
 
 
@@ -478,34 +359,37 @@ async def get_inference_job_request(job_id: str) -> InferenceJobRequestView:
     operation_id="v0_get_inference_job_result",
     tags=["inference jobs"],
 )
-async def get_inference_job_result(job_id: str) -> InferenceJobResult:
-    row = await run_in_threadpool(fetch_job, job_id)
-    if row is None:
+async def get_inference_job_result(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> InferenceJobResult:
+    job = await crud.fetch_job(db=db, job_id=job_id)
+    if job is None:
         raise HTTPException(status_code=404, detail="Inference job not found")
 
-    if row["status"] in {"queued", "running"}:
+    if job.status in {"queued", "running"}:
         raise HTTPException(
             status_code=409,
             detail="Inference job is not complete yet",
         )
 
-    if row["status"] == "failed":
+    if job.status == "failed":
         raise HTTPException(
             status_code=409,
             detail={
                 "message": "Inference job failed",
-                "error_text": row["error_text"],
+                "error_text": job.error_text,
             },
         )
 
-    if row["result_json"] is None:
+    if job.result_json is None:
         raise HTTPException(status_code=500, detail="Completed job has no stored result")
 
     return InferenceJobResult(
-        job_id=row["job_id"],
+        job_id=job.job_id,
         status="succeeded",
-        result=FlightDelayPredictionOutput.model_validate(json.loads(row["result_json"])),
-        completed_at=row["completed_at"],
+        result=FlightDelayPredictionOutput.model_validate(job.result_json),
+        completed_at=job.completed_at.isoformat(),
     )
 
 
@@ -513,12 +397,15 @@ async def get_inference_job_result(job_id: str) -> InferenceJobResult:
     "/inference-jobs/{job_id}",
     response_model=DeleteJobResponse,
     summary="Delete a stored inference job",
-    description="Delete a stored inference job record from the local tracking database.",
+    description="Delete a stored inference job record from PostgreSQL.",
     operation_id="v0_delete_inference_job",
     tags=["inference jobs"],
 )
-async def delete_inference_job(job_id: str) -> DeleteJobResponse:
-    deleted = await run_in_threadpool(delete_job_record, job_id)
+async def delete_inference_job(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> DeleteJobResponse:
+    deleted = await crud.delete_job_record(db=db, job_id=job_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Inference job not found")
     return DeleteJobResponse(job_id=job_id, deleted=True)
@@ -533,22 +420,17 @@ async def delete_inference_job(job_id: str) -> DeleteJobResponse:
     tags=["inference jobs"],
 )
 async def predict_sync(features: FlightInferenceFeatures) -> FlightDelayPredictionOutput:
-    return await run_in_threadpool(run_prediction, features)
+    return run_prediction(features)
 
 
 @app.delete(
     "/reset-job-store",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete all stored job records",
-    description="Convenience endpoint for demos and testing. Removes all rows from the local SQLite tracking table.",
+    description="Convenience endpoint for demos and testing. Removes all rows from the PostgreSQL tracking table.",
     operation_id="v0_reset_job_store",
     tags=["analytics"],
 )
-async def reset_job_store() -> Response:
-    def _reset() -> None:
-        with get_connection() as conn:
-            conn.execute("DELETE FROM inference_jobs")
-            conn.commit()
-
-    await run_in_threadpool(_reset)
+async def reset_job_store(db: AsyncSession = Depends(get_db)) -> Response:
+    await crud.reset_job_store(db=db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
