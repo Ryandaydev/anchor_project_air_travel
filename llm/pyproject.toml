@@ -8,4 +8,5 @@ dependencies = [
     "fastapi[standard]>=0.135.1",
     "nest-asyncio>=1.6.0",
     "openai>=2.28.0",
+    "pandas>=3.0.1",
 ]
