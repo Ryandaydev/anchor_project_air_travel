@@ -8,6 +8,7 @@ from database import Base
 
 class Flight(Base):
     __tablename__ = "flights"
+    __table_args__ = {"schema": "airline"}    
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
 

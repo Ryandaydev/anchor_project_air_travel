@@ -10,7 +10,23 @@ from schemas import Flight
 app = FastAPI()
 
 
-@app.get("/v0/flights", response_model=list[Flight])
+@app.get(
+    "/",
+    summary="Check to see if the Flights API is running",
+    description="""Use this endpoint to check if the API is running. You can also check it first before making other calls to be sure it's running.""",
+    response_description="A JSON record with a message in it. If the API is running the message will say successful.",
+    operation_id="v0_health_check",
+    tags=["analytics"],
+)
+async def root():
+    return {"message": "API health check successful"}
+
+@app.get(
+        "/v0/flights", 
+        description="""Search for flights based on carrier, flight number, and flight date. You can also paginate the results using the skip and limit parameters.""",
+        operation_id="v0_search_flights",
+        tags=["flight info"],
+        response_model=list[Flight])
 async def search_flights(
     carrier: str | None = Query(default=None),
     flightnumber: str | None = Query(default=None),
