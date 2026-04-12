@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS stage_flights;
+DROP TABLE IF EXISTS airline.stage_flights;
 
-CREATE TABLE stage_flights (
+CREATE TABLE airline.stage_flights (
     year TEXT,
     quarter TEXT,
     month TEXT,

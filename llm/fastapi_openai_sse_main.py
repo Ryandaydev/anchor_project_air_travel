@@ -11,7 +11,7 @@ if not os.getenv("OPENAI_API_KEY"):
     raise EnvironmentError("OPENAI_API_KEY is not set in the environment.")
 
 
-app = FastAPI(title="OpenAI Streaming Demo")
+app = FastAPI(title="LLM Streaming Demo")
 client = AsyncOpenAI()
 
 DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.4")

@@ -1,4 +1,4 @@
-INSERT INTO flights (
+INSERT INTO airline.flights (
     year,
     quarter,
     month,
@@ -146,4 +146,4 @@ SELECT
     NULLIF(lateaircraftdelay,'')::DOUBLE PRECISION,
 
     duplicate_flag
-FROM stage_flights;
+FROM airline.stage_flights;

@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS flights (
+DROP TABLE IF EXISTS airline.flights;
+
+CREATE TABLE airline.flights (
     id BIGSERIAL PRIMARY KEY,
     year INTEGER NOT NULL,
     quarter INTEGER,
@@ -81,16 +83,16 @@ CREATE TABLE IF NOT EXISTS flights (
 );
 
 CREATE INDEX IF NOT EXISTS idx_flights_flight_date
-    ON flights (flight_date);
+    ON airline.flights (flight_date);
 
 CREATE INDEX IF NOT EXISTS idx_flights_airline_date
-    ON flights (iata_code_marketing_airline, flight_date);
+    ON airline.flights (iata_code_marketing_airline, flight_date);
 
 CREATE INDEX IF NOT EXISTS idx_flights_origin_date
-    ON flights (origin, flight_date);
+    ON airline.flights (origin, flight_date);
 
 CREATE INDEX IF NOT EXISTS idx_flights_dest_date
-    ON flights (dest, flight_date);
+    ON airline.flights (dest, flight_date);
 
 CREATE INDEX IF NOT EXISTS idx_flights_route_date
-    ON flights (origin, dest, flight_date);
+    ON airline.flights (origin, dest, flight_date);

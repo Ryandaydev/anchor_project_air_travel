@@ -1,4 +1,4 @@
-\copy stage_flights(
+\copy staging.stage_flights(
 year,
 quarter,
 month,
@@ -120,5 +120,5 @@ div5tailnum,
 duplicate_flag,
 extra_col
 )
-FROM 'real_data_11_2025.csv'
+FROM 'test_file.csv'
 WITH (FORMAT csv, HEADER true);
