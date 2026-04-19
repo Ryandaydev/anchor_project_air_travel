@@ -8,7 +8,7 @@ dependencies = [
 ]
 
 [project.scripts]
-air-travel = "air_travel_cli.main:main"
+air-travel = "air_travel_cli.main:main_entry"
 
 [build-system]
 requires = ["hatchling"]
