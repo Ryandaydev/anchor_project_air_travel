@@ -82,6 +82,25 @@ async def get_flights(
     return "\n".join(flights) if flights else "No flights found."
 
 
+@mcp.tool
+async def health_check() -> str:
+    """Check if the Air Travel API is running."""
+    url = f"{AIR_TRAVEL_API_BASE}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, timeout=10.0)
+            response.raise_for_status()
+
+            data = response.json()
+            return f"Health check success: {data.get('message', 'No message returned')}"
+
+        except httpx.HTTPStatusError as e:
+            return f"HTTP error {e.response.status_code}: {e.response.text}"
+
+        except Exception as e:
+            return f"Request failed: {type(e).__name__}: {str(e)}"
+
 # Server entrypoint
 if __name__ == "__main__":
     mcp.run()  
