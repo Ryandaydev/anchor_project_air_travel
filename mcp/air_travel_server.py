@@ -18,17 +18,18 @@ mcp = FastMCP("Air Travel Server")
 AIR_TRAVEL_API_BASE = "https://air-travel.fastapicloud.dev/"
 
 
-async def make_air_travel_request(url: str, params: Optional[dict] = None) -> dict[str, Any] | None:
-    """Make a request to the Air Travel API with proper error handling."""
-    logger.debug(f"Requesting URL: {url} with params: {params}")
+async def make_air_travel_request(url: str, params: Optional[dict] = None):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, params=params, timeout=30.0)
             response.raise_for_status()
             return response.json()
+
+        except httpx.HTTPStatusError as e:
+            return f"HTTP ERROR {e.response.status_code}: {e.response.text}"
+
         except Exception as e:
-            logger.exception(f"Request failed: {e}")
-            return None
+            return f"REQUEST FAILED: {type(e).__name__}: {str(e)}"
 
 
 @mcp.tool
