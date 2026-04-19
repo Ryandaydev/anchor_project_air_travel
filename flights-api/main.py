@@ -19,7 +19,7 @@ app = FastAPI()
     tags=["analytics"],
 )
 async def root():
-    return {"message": "API health check successful"}
+    return {"message": "API health check is successful"}
 
 @app.get(
         "/v0/flights", 
