@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Create server
 mcp = FastMCP("Air Travel Server")
 
-AIR_TRAVEL_API_BASE = "https://air-travel.fastapicloud.dev/"
+AIR_TRAVEL_API_BASE = "https://air-travel.fastapicloud.dev"
 
 
 async def make_air_travel_request(url: str, params: Optional[dict] = None):
