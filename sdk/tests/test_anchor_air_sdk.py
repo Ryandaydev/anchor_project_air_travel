@@ -1,11 +1,11 @@
 import pytest
 
-from air_travel import AirTravelClient
+from anchor_air import AnchorAirClient
 
 
 def test_health_check_returns_dict():
     """Tests health check from SDK."""
-    client = AirTravelClient()
+    client = AnchorAirClient()
 
     response = client.health()
 
@@ -14,7 +14,7 @@ def test_health_check_returns_dict():
 
 def test_flights_returns_list():
     """Tests searching flights from SDK."""
-    client = AirTravelClient()
+    client = AnchorAirClient()
 
     flights = client.flights(limit=10)
 
@@ -23,7 +23,7 @@ def test_flights_returns_list():
 
 def test_flights_with_carrier_filter_returns_list():
     """Tests searching flights with a carrier filter."""
-    client = AirTravelClient()
+    client = AnchorAirClient()
 
     flights = client.flights(
         carrier="AA",
@@ -35,7 +35,7 @@ def test_flights_with_carrier_filter_returns_list():
 
 def test_flight_records_have_expected_fields():
     """Tests flight records include expected API fields."""
-    client = AirTravelClient()
+    client = AnchorAirClient()
 
     flights = client.flights(limit=1)
 

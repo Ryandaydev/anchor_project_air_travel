@@ -2,13 +2,13 @@ from urllib.parse import urljoin
 
 import httpx
 
-from air_travel.exceptions import AirTravelAPIError, AirTravelRequestError
+from anchor_air.exceptions import AnchorAirAPIError, AnchorAirRequestError
 
 DEFAULT_BASE_URL = "https://air-travel.fastapicloud.dev"
 
 
-class AirTravelClient:
-    """Client for the Air Travel API."""
+class AnchorAirClient:
+    """Client for the Anchor Air API."""
 
     def __init__(
         self,
@@ -32,13 +32,13 @@ class AirTravelClient:
             return response.json()
 
         except httpx.HTTPStatusError as e:
-            raise AirTravelAPIError(
+            raise AnchorAirAPIError(
                 status_code=e.response.status_code,
                 response_text=e.response.text,
             ) from e
 
         except httpx.HTTPError as e:
-            raise AirTravelRequestError(str(e)) from e
+            raise AnchorAirRequestError(str(e)) from e
 
     def flights(
         self,
@@ -71,10 +71,10 @@ class AirTravelClient:
             return response.json()
 
         except httpx.HTTPStatusError as e:
-            raise AirTravelAPIError(
+            raise AnchorAirAPIError(
                 status_code=e.response.status_code,
                 response_text=e.response.text,
             ) from e
 
         except httpx.HTTPError as e:
-            raise AirTravelRequestError(str(e)) from e
+            raise AnchorAirRequestError(str(e)) from e

@@ -1,12 +1,12 @@
-class AirTravelError(Exception):
-    """Base exception for the Air Travel SDK."""
+class AnchorAirError(Exception):
+    """Base exception for the Anchor Air SDK."""
 
 
-class AirTravelRequestError(AirTravelError):
+class AnchorAirRequestError(AnchorAirError):
     """Raised when the API request fails before receiving a response."""
 
 
-class AirTravelAPIError(AirTravelError):
+class AnchorAirAPIError(AnchorAirError):
     """Raised when the API returns an error response."""
 
     def __init__(self, status_code: int, response_text: str):
