@@ -1,6 +1,6 @@
 [project]
 name = "air-travel-cli"
-version = "0.1.0"
+version = "0.2.0"
 description = "Command line interface for the Air Travel API"
 readme = "README.md"
 requires-python = ">=3.11"
