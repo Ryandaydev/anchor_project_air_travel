@@ -76,8 +76,10 @@ def flights(
         help="Number of records to skip",
     ),
     limit: int = typer.Option(
-        100,
-        help="Maximum number of records to return",
+        20,
+        "--limit",
+        min=1,
+        help="Maximum number of records to return (default: 20)",
     ),
     json_output: bool = typer.Option(
         False,
