@@ -1,3 +1,5 @@
+import json
+
 import typer
 
 from air_travel import (
@@ -77,6 +79,11 @@ def flights(
         100,
         help="Maximum number of records to return",
     ),
+    json_output: bool = typer.Option(
+        False,
+        "--json",
+        help="Output raw JSON instead of formatted text",
+    ),
 ):
     """Search for flights."""
     try:
@@ -98,6 +105,10 @@ def flights(
 
     if not data:
         typer.echo("No flights found.")
+        return
+
+    if json_output:
+        typer.echo(json.dumps(data, indent=2, default=str))
         return
 
     for flight in data:

@@ -80,6 +80,41 @@ air-travel flights \
   --limit 25
 ```
 
+## JSON Output
+
+Return raw JSON instead of formatted text:
+
+```bash
+uv run air-travel flights \
+  --carrier AA \
+  --json
+```
+
+Combine filters with JSON output:
+
+```bash
+uv run air-travel flights \
+  --carrier UA \
+  --flight-date 2025-11-27 \
+  --json
+```
+
+The JSON output is useful for scripting, automation, and AI coding agents. It can be combined with standard command-line tools such as `jq`:
+
+```bash
+uv run air-travel flights \
+  --carrier UA \
+  --json | jq .
+```
+
+Display only the first returned flight:
+
+```bash
+uv run air-travel flights \
+  --carrier UA \
+  --json | jq '.[0]'
+```
+
 ## Using a Different API Endpoint
 
 Override the default API URL:
@@ -94,6 +129,12 @@ air-travel \
 air-travel \
   --base-url http://localhost:8000 \
   flights --carrier AA
+```
+
+```bash
+uv run air-travel \
+  --base-url http://localhost:8000 \
+  flights --carrier AA --json
 ```
 
 ## Typer Features
