@@ -2,18 +2,6 @@
 
 Python SDK for the Air Travel API.
 
-## Installation
-
-```bash
-pip install air-travel
-```
-
-For local development:
-
-```bash
-uv pip install -e .
-```
-
 ## Quick Start
 
 ```python
@@ -26,8 +14,7 @@ print(health)
 
 flights = client.flights(
     carrier="AA",
-    flightnumber="100",
-    flight_date="2025-01-01",
+    limit=5,
 )
 
 for flight in flights:
@@ -74,14 +61,29 @@ client.flights(
 
 Parameters:
 
-| Parameter | Type | Required |
-|------------|--------|----------|
-| carrier | str | No |
-| flightnumber | str | No |
-| flight_date | str (YYYY-MM-DD) | No |
-| skip | int | No |
-| limit | int | No |
+| Parameter    | Type             | Required |
+| ------------ | ---------------- | -------- |
+| carrier      | str              | No       |
+| flightnumber | str              | No       |
+| flight_date  | str (YYYY-MM-DD) | No       |
+| skip         | int              | No       |
+| limit        | int              | No       |
 
-## License
+## Error Handling
 
-MIT
+```python
+from air_travel import (
+    AirTravelClient,
+    AirTravelAPIError,
+    AirTravelRequestError,
+)
+
+client = AirTravelClient()
+
+try:
+    flights = client.flights(carrier="AA")
+except AirTravelAPIError as e:
+    print(f"API Error: {e}")
+except AirTravelRequestError as e:
+    print(f"Request Error: {e}")
+```
