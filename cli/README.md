@@ -1,25 +1,29 @@
-# Air Travel CLI
+# Air Travel CLI (v0.2.0)
 
 Command line interface for the Air Travel API.
 
-## Installation
-
-```bash
-uv sync
-```
+The CLI is built on top of the Air Travel SDK and provides a simple way to search flight data and check API status directly from the terminal.
 
 ## Help
 
 Show available commands:
 
 ```bash
-uv run air-travel --help
+air-travel --help
 ```
 
 Show help for a specific command:
 
 ```bash
-uv run air-travel flights --help
+air-travel flights --help
+```
+
+## Version
+
+Display the installed CLI version:
+
+```bash
+air-travel --version
 ```
 
 ## Health Check
@@ -27,7 +31,14 @@ uv run air-travel flights --help
 Check API status:
 
 ```bash
-uv run air-travel health
+air-travel health
+```
+
+Example output:
+
+```text
+API is healthy
+{'message': 'API health check is successful'}
 ```
 
 ## Search Flights
@@ -35,13 +46,13 @@ uv run air-travel health
 Search by carrier:
 
 ```bash
-uv run air-travel flights --carrier AA
+air-travel flights --carrier AA
 ```
 
 Search by carrier and flight number:
 
 ```bash
-uv run air-travel flights \
+air-travel flights \
   --carrier AA \
   --flightnumber 100
 ```
@@ -49,14 +60,14 @@ uv run air-travel flights \
 Search by date:
 
 ```bash
-uv run air-travel flights \
+air-travel flights \
   --flight-date 2025-01-01
 ```
 
 Limit results:
 
 ```bash
-uv run air-travel flights \
+air-travel flights \
   --carrier AA \
   --limit 10
 ```
@@ -64,7 +75,7 @@ uv run air-travel flights \
 Skip records:
 
 ```bash
-uv run air-travel flights \
+air-travel flights \
   --skip 100 \
   --limit 25
 ```
@@ -74,31 +85,54 @@ uv run air-travel flights \
 Override the default API URL:
 
 ```bash
-uv run air-travel \
+air-travel \
   --base-url http://localhost:8000 \
   health
 ```
 
 ```bash
-uv run air-travel \
+air-travel \
   --base-url http://localhost:8000 \
   flights --carrier AA
 ```
 
 ## Typer Features
 
-Typer automatically provides:
+The CLI is built with Typer, which automatically provides:
 
 ```bash
-uv run air-travel --help
+air-travel --help
 ```
 
 ```bash
-uv run air-travel health --help
+air-travel health --help
 ```
 
 ```bash
-uv run air-travel flights --help
+air-travel flights --help
 ```
 
-along with argument validation, help text, and shell completion support.
+along with:
+
+* Automatic help generation
+* Type-safe command arguments
+* Input validation
+* Consistent command-line experience
+* Shell completion support
+
+## Relationship to the SDK
+
+The CLI focuses on:
+
+* Command parsing
+* Terminal output
+* User interaction
+
+The underlying Air Travel SDK handles:
+
+* API communication
+* Request construction
+* Response processing
+* Error handling
+
+This separation keeps the CLI lightweight while making the SDK reusable from Python applications and notebooks.
