@@ -189,21 +189,6 @@ https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGK&QO_fu146_anzr=b0
 
 ------------------------------------------------------------------------
 
-# Repository Structure
-
-    anchor_project_air_travel/
-    ├── cli/
-    ├── data/
-    ├── flights-api/
-    ├── inference-api/
-    ├── llm/
-    ├── mcp/
-    ├── ml-models/
-    ├── postgres/
-    └── sdk/
-
-------------------------------------------------------------------------
-
 # Other Anchor Project Pieces
 
 ## data/
