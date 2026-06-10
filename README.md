@@ -32,7 +32,7 @@ underneath.
 
 **Repository path:**
 
-    cli/
+[cli/](./cli)
 
 ------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ It is used by:
 
 **Repository path:**
 
-    sdk/
+[sdk/](./sdk)
 
 ------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ by the SDK.
 
 **Repository path:**
 
-    flights-api/
+[flights-api/](./flights-api)
 
 ------------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ The Flights API retrieves flight information from this database layer.
 
 **Repository path:**
 
-    postgres/
+[postgres/](./postgres)
 
 ------------------------------------------------------------------------
 
@@ -95,7 +95,7 @@ the shared SDK.
 
 **Repository path:**
 
-    mcp/
+[mcp/](./mcp)
 
 ------------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ Typical activities include:
 
 **Repository path:**
 
-    llm/
+[llm/](./llm)
 
 ------------------------------------------------------------------------
 
@@ -137,7 +137,7 @@ Potential use cases include:
 
 **Repository path:**
 
-    llm/
+[llm/](./llm)
 
 ------------------------------------------------------------------------
 
