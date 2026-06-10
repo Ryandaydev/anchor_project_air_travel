@@ -1,4 +1,4 @@
-# Anchor Project - Air Travel
+# ✈ Anchor Project - Air Travel ✈
 
 Ryan Day's air travel to explore and demonstrate advanced techniques around the me of data science, APIs, and increasingly LLMs.
 
