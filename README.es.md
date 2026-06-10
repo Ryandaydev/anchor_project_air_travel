@@ -6,6 +6,8 @@ A medida que construyo cosas aquí, escribo sobre ellas en mi boletín Tip Sheet
 
 Este proyecto ancla incluye algunas técnicas bastante avanzadas. Si deseas desarrollar conocimientos fundamentales sobre APIs FastAPI para IA y Ciencia de Datos en Python, ¡he escrito un libro que deberías leer! Descúbrelo en [Hands-on APIs for AI and Data Science: Python Development with FastAPI](https://handsonapibook.com).
 
+[English readme](README.md)
+
 ---
 
 ## Temas principales
