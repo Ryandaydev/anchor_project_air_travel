@@ -139,7 +139,7 @@ Typical activities include:
 
 ------------------------------------------------------------------------
 
-## Data Applications
+## Data Applications [FUTURE]
 
 Interactive applications built with frameworks such as Streamlit or
 Gradio.
