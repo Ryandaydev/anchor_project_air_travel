@@ -24,7 +24,20 @@ integration layer, allowing multiple consumers to reuse the same
 functionality while minimizing duplicated code.
 
 ------------------------------------------------------------------------
+## Technologies used
 
+- Python - pretty much all the code is in Python
+- FastAPI - API development platform
+- PostgreSQL and Supabase - Cloud PosgreSQL database
+- FastMCP - framework for building MCP servers and clients
+- Typer - Library to build command line interface (CLI)
+- HTTPX - Async library for API calls.
+- ONNX runtime - Open framework for hosting ML models for inference
+- Juypter Notebooks - Every data scientists friend
+
+------------------------------------------------------------------------
+
+## Major themes
 # Core Components
 
 ## Air Travel CLI
