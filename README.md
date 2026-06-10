@@ -155,6 +155,8 @@ But the approach to training and serving inference via API is a solid framework.
 
 [ml-models/](./ml-models)
 
+[inference-api/](./inference-api)
+
 ------------------------------------------------------------------------
 
 ## Data Applications [FUTURE]
@@ -162,7 +164,7 @@ But the approach to training and serving inference via API is a solid framework.
 Interactive applications built with frameworks such as Streamlit or
 Gradio.
 
-These applications provide end-user experiences while relying on the SDK
+These applications will provide end-user experiences while relying on the SDK
 to retrieve data.
 
 Potential use cases include:
@@ -171,10 +173,6 @@ Potential use cases include:
 -   Dashboards
 -   Demonstrations
 -   AI-assisted experiences
-
-**Repository path:**
-
-[llm/](./llm)
 
 ------------------------------------------------------------------------
 
@@ -199,23 +197,10 @@ throughout the project.
 
 ------------------------------------------------------------------------
 
-## inference-api/
-
-Services related to machine learning inference and deployment
-experimentation.
-
-------------------------------------------------------------------------
-
 ## llm/
 
 Experiments involving large language models, prompt engineering, and AI
 workflows.
-
-------------------------------------------------------------------------
-
-## ml-models/
-
-Machine learning model training, evaluation, and experimentation assets.
 
 ------------------------------------------------------------------------
 
