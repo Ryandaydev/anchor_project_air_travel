@@ -70,8 +70,7 @@ It is used by:
 -   The Air Travel CLI
 -   The MCP Server
 -   Jupyter notebooks
--   Streamlit and Gradio applications
--   Future integrations
+-   Streamlit and Gradio applications [FUTURE]
 
 **Repository path:**
 
