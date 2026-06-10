@@ -18,8 +18,10 @@ This anchor project has some fairly advanced techniques. If you want to build fo
 
 ![Anchor Project Architecture](images/anchor_project_big_picture.png)
 
-The diagram above illustrates the major components of the Anchor Project
-and how they interact. The **Air Travel SDK** serves as the central
+Here's a big picture view of all of the anchor project components.
+They show different pieces of an enterprise build around a data source and Python frameworks.
+
+The **Air Travel SDK** serves as the central
 integration layer, allowing multiple consumers to reuse the same
 functionality while minimizing duplicated code.
 
@@ -32,6 +34,7 @@ functionality while minimizing duplicated code.
 - FastMCP - framework for building MCP servers and clients
 - Typer - Library to build command line interface (CLI)
 - HTTPX - Async library for API calls.
+- Scikit-Learn - Python framework for ML model training
 - ONNX runtime - Open framework for hosting ML models for inference
 - Juypter Notebooks - Every data scientists friend
 
@@ -136,6 +139,20 @@ Typical activities include:
 **Repository path:**
 
 [llm/](./llm)
+
+------------------------------------------------------------------------
+
+## ML model training and API model inference
+
+Jupyter notebook demonstrating ML model traing and building an API for inference.
+
+The model trained in this example is pretty naive, so don't look too closely.
+
+But the approach to training and serving inference via API is a solid framework.
+
+**Repository path:**
+
+[ml-models/](./ml-models)
 
 ------------------------------------------------------------------------
 
