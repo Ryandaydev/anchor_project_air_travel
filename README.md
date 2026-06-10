@@ -1,6 +1,6 @@
 # ✈ Anchor Project - Air Travel ✈
 
-Ryan Day's air travel to explore and demonstrate advanced techniques around the me of data science, APIs, and increasingly LLMs.
+Ryan Day's anchor project to explore and demonstrate advanced techniques around the me of data science, APIs, and increasingly LLMs.
 
 As I build stuff here, I write about in my Tip Sheet newsletter. Subscribe here to learn how I build these anchor project components and how you can, too: [https://tips.handsonapibook.com/](subscribe to the Tip Sheet newsletter).
 
