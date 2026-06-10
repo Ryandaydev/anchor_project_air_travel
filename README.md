@@ -2,9 +2,9 @@
 
 Ryan Day's anchor project to explore and demonstrate advanced techniques around the me of data science, APIs, and increasingly LLMs.
 
-As I build stuff here, I write about in my Tip Sheet newsletter. Subscribe here to learn how I build these anchor project components and how you can, too: [https://tips.handsonapibook.com/](subscribe to the Tip Sheet newsletter).
+As I build stuff here, I write about in my Tip Sheet newsletter. Subscribe here to learn how I build these anchor project components and how you can, too: ![subscribe to the Tip Sheet newsletter](https://tips.handsonapibook.com/).
 
-This anchor project has some fairly advanced techniques. If you want to build foundational knowledge of FastAPI APIs for AI and Data Science in Python, I wrote a book you should read! Check it out at [https://handsonapibook.com](Hands-on APIs for AI and Data Science: Python Development with FastAPI).
+This anchor project has some fairly advanced techniques. If you want to build foundational knowledge of FastAPI APIs for AI and Data Science in Python, I wrote a book you should read! Check it out at ![Hands-on APIs for AI and Data Science: Python Development with FastAPI](https://handsonapibook.com).
 
 ------------------------------------------------------------------------
 
