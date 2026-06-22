@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 mcp = FastMCP("Air Travel Server")
 
-client = AirTravelClient(base_url="https://air-travel.fastapicloud.dev")
+client = AirTravelClient()
 
 
 @mcp.tool

@@ -4,7 +4,7 @@ import httpx
 
 from air_travel.exceptions import AirTravelAPIError, AirTravelRequestError
 
-DEFAULT_BASE_URL = "https://air-travel.fastapicloud.dev"
+DEFAULT_BASE_URL = "https://api.airtravelsource.com/"
 
 
 class AirTravelClient:
