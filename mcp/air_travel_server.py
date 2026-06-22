@@ -85,5 +85,40 @@ async def health_check() -> str:
         return str(e)
 
 
+@mcp.tool
+async def get_airline_codes(
+    code: Optional[str] = None,
+) -> dict[str, str] | str:
+    """
+    Return DOT/BTS airline carrier codes mapped to airline names.
+
+    If code is provided, return only that airline.
+    """
+    airline_codes = {
+        "AA": "American Airlines Inc.",
+        "AS": "Alaska Airlines Inc.",
+        "B6": "JetBlue Airways",
+        "DL": "Delta Air Lines Inc.",
+        "F9": "Frontier Airlines Inc.",
+        "G4": "Allegiant Air",
+        "HA": "Hawaiian Airlines Inc.",
+        "NK": "Spirit Air Lines",
+        "SY": "Sun Country Airlines d/b/a MN Airlines",
+        "UA": "United Air Lines Inc.",
+        "WN": "Southwest Airlines Co.",
+    }
+
+    if code:
+        normalized_code = code.upper()
+        airline = airline_codes.get(normalized_code)
+
+        if not airline:
+            return f"No airline found for code: {normalized_code}"
+
+        return f"{normalized_code}: {airline}"
+
+    return airline_codes
+
+
 if __name__ == "__main__":
     mcp.run()
