@@ -1,9 +1,13 @@
 [project]
-name = "football"
+name = "air-travel-mcp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Air Travel MCP Server"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastmcp>=3.0.0b2",
+    "air-travel",
 ]
+
+[tool.uv.sources]
+air-travel = { workspace = true }
