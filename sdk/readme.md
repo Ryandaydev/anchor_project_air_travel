@@ -26,7 +26,7 @@ for flight in flights:
 By default, the SDK uses:
 
 ```text
-https://air-travel.fastapicloud.dev
+https://api.airtravelsource.com/
 ```
 
 To use a different environment:
