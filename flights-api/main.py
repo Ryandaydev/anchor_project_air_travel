@@ -79,10 +79,10 @@ async def search_flights(
 @app.get(
         "/v0/carriers",
         description="""List DOT/BTS airline carrier codes and the airline names they represent. Provide a code to look up a single carrier.""",
-        operation_id="v0_list_carriers",
+        operation_id="v0_search_carriers",
         tags=["carriers"],
         response_model=list[Carrier])
-async def list_carriers(
+async def search_carriers(
     code: str | None = Query(default=None),
 ):
     return crud.search_carriers(code=code)
