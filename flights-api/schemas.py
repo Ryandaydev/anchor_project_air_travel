@@ -33,3 +33,8 @@ class Flight(FlightBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class Carrier(BaseModel):
+    code: str
+    name: str

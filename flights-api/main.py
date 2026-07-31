@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
 from database import get_db
-from schemas import Flight
+from schemas import Carrier, Flight
 
 api_description = """
 The Air Travel API provides read-only access to historical U.S. flight data.
@@ -27,6 +27,10 @@ sets.
 
 The flight data comes from the U.S. Department of Transportation Bureau of
 Transportation Statistics airline on-time performance data.
+
+## Carriers
+
+Look up DOT/BTS airline carrier codes and the airline names they represent.
 """
 
 app = FastAPI(
@@ -71,3 +75,14 @@ async def search_flights(
     )
 
     return flights
+
+@app.get(
+        "/v0/carriers",
+        description="""List DOT/BTS airline carrier codes and the airline names they represent. Provide a code to look up a single carrier.""",
+        operation_id="v0_list_carriers",
+        tags=["carriers"],
+        response_model=list[Carrier])
+async def list_carriers(
+    code: str | None = Query(default=None),
+):
+    return crud.search_carriers(code=code)

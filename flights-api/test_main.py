@@ -159,3 +159,43 @@ async def test_search_flights_rejects_invalid_limit():
         )
 
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_list_carriers_with_no_params_returns_all_carriers():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        response = await ac.get("/v0/carriers")
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 1
+    assert {"code": "UA", "name": "United Air Lines Inc."} in data
+
+
+@pytest.mark.asyncio
+async def test_list_carriers_with_code_returns_single_carrier():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        response = await ac.get("/v0/carriers", params={"code": "ua"})
+
+    assert response.status_code == 200
+    assert response.json() == [{"code": "UA", "name": "United Air Lines Inc."}]
+
+
+@pytest.mark.asyncio
+async def test_list_carriers_with_unknown_code_returns_empty_list():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        response = await ac.get("/v0/carriers", params={"code": "ZZ"})
+
+    assert response.status_code == 200
+    assert response.json() == []

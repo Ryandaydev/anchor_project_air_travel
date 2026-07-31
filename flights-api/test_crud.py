@@ -107,3 +107,26 @@ async def test_search_flights_uses_stable_ordering_for_pagination(db_session):
     if first_ids and second_ids:
         assert first_ids[-1] < second_ids[0]
         assert set(first_ids).isdisjoint(second_ids)
+
+
+def test_search_carriers_with_no_code_returns_all_carriers():
+    carriers = crud.search_carriers()
+
+    assert len(carriers) == len(crud.CARRIER_CODES)
+    assert {"code": "UA", "name": "United Air Lines Inc."} in [
+        carrier.model_dump() for carrier in carriers
+    ]
+
+
+def test_search_carriers_with_code_returns_single_carrier():
+    carriers = crud.search_carriers(code="ua")
+
+    assert len(carriers) == 1
+    assert carriers[0].code == "UA"
+    assert carriers[0].name == "United Air Lines Inc."
+
+
+def test_search_carriers_with_unknown_code_returns_empty_list():
+    carriers = crud.search_carriers(code="ZZ")
+
+    assert carriers == []
