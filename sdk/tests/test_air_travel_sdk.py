@@ -57,3 +57,22 @@ def test_flight_records_have_expected_fields():
 
     for field in expected_fields:
         assert field in flight
+
+
+def test_carriers_returns_list():
+    """Tests listing carriers from SDK."""
+    client = AirTravelClient()
+
+    carriers = client.carriers()
+
+    assert isinstance(carriers, list)
+    assert {"code": "UA", "name": "United Air Lines Inc."} in carriers
+
+
+def test_carriers_with_code_filter_returns_single_carrier():
+    """Tests looking up a single carrier by code."""
+    client = AirTravelClient()
+
+    carriers = client.carriers(code="ua")
+
+    assert carriers == [{"code": "UA", "name": "United Air Lines Inc."}]

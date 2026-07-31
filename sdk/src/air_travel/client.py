@@ -40,6 +40,31 @@ class AirTravelClient:
         except httpx.HTTPError as e:
             raise AirTravelRequestError(str(e)) from e
 
+    def carriers(self, code: str | None = None) -> list[dict]:
+        """List DOT/BTS airline carrier codes and names."""
+        params: dict[str, str] = {}
+
+        if code:
+            params["code"] = code
+
+        try:
+            response = httpx.get(
+                self.build_url("/v0/carriers"),
+                params=params,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+
+        except httpx.HTTPStatusError as e:
+            raise AirTravelAPIError(
+                status_code=e.response.status_code,
+                response_text=e.response.text,
+            ) from e
+
+        except httpx.HTTPError as e:
+            raise AirTravelRequestError(str(e)) from e
+
     def flights(
         self,
         carrier: str | None = None,

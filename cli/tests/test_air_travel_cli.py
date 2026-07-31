@@ -35,3 +35,10 @@ def test_flights():
 
     assert result.exit_code == 0
     assert "Flight ID:" in result.output or "No flights found." in result.output
+
+
+def test_carriers():
+    result = runner.invoke(app, ["carriers", "--code", "UA"])
+
+    assert result.exit_code == 0
+    assert "UA: United Air Lines Inc." in result.output

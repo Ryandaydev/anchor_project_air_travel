@@ -121,7 +121,7 @@ async def health_check() -> str:
 
 
 @mcp.tool
-def get_airline_codes(
+async def get_airline_codes(
     code: str | None = None,
 ) -> dict[str, str] | str:
     """
@@ -129,30 +129,23 @@ def get_airline_codes(
 
     If code is provided, return only that airline.
     """
-    airline_codes = {
-        "AA": "American Airlines Inc.",
-        "AS": "Alaska Airlines Inc.",
-        "B6": "JetBlue Airways",
-        "DL": "Delta Air Lines Inc.",
-        "F9": "Frontier Airlines Inc.",
-        "G4": "Allegiant Air",
-        "HA": "Hawaiian Airlines Inc.",
-        "NK": "Spirit Air Lines",
-        "SY": "Sun Country Airlines d/b/a MN Airlines",
-        "UA": "United Air Lines Inc.",
-        "WN": "Southwest Airlines Co.",
-    }
+    try:
+        data = await get_client().carriers(code=code)
+    except AirTravelAPIError as e:
+        return str(e)
+    except AirTravelRequestError as e:
+        return str(e)
+
+    if not data:
+        if code:
+            return f"No airline found for code: {code.upper()}"
+        return "No carriers found."
 
     if code:
-        normalized_code = code.upper()
-        airline = airline_codes.get(normalized_code)
+        carrier = data[0]
+        return f"{carrier['code']}: {carrier['name']}"
 
-        if not airline:
-            return f"No airline found for code: {normalized_code}"
-
-        return f"{normalized_code}: {airline}"
-
-    return airline_codes
+    return {carrier["code"]: carrier["name"] for carrier in data}
 
 
 if __name__ == "__main__":

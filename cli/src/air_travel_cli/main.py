@@ -137,6 +137,42 @@ def flights(
         )
 
 
+@app.command()
+def carriers(
+    code: str | None = typer.Option(
+        None,
+        help="Airline carrier code, e.g. AA",
+    ),
+    json_output: bool = typer.Option(
+        False,
+        "--json",
+        help="Output raw JSON instead of formatted text",
+    ),
+):
+    """List airline carrier codes and names."""
+    try:
+        data = client.carriers(code=code)
+
+    except AirTravelAPIError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(code=1)
+
+    except AirTravelRequestError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(code=1)
+
+    if not data:
+        typer.echo("No carriers found.")
+        return
+
+    if json_output:
+        typer.echo(json.dumps(data, indent=2, default=str))
+        return
+
+    for carrier in data:
+        typer.echo(f"{carrier.get('code', 'N/A')}: {carrier.get('name', 'N/A')}")
+
+
 def main_entry():
     app()
 

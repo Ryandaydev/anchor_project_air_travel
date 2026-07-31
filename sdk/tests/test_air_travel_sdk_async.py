@@ -57,3 +57,22 @@ async def test_flight_records_have_expected_fields():
 
     for field in expected_fields:
         assert field in flight
+
+
+@pytest.mark.asyncio
+async def test_carriers_returns_list():
+    """Tests listing carriers from asynchronous SDK."""
+    async with AsyncAirTravelClient() as client:
+        carriers = await client.carriers()
+
+    assert isinstance(carriers, list)
+    assert {"code": "UA", "name": "United Air Lines Inc."} in carriers
+
+
+@pytest.mark.asyncio
+async def test_carriers_with_code_filter_returns_single_carrier():
+    """Tests looking up a single carrier by code."""
+    async with AsyncAirTravelClient() as client:
+        carriers = await client.carriers(code="ua")
+
+    assert carriers == [{"code": "UA", "name": "United Air Lines Inc."}]
