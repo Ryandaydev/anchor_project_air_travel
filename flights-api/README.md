@@ -106,7 +106,9 @@ Activate the environment (optional):
 
 ## Database
 
-Set the connection string:
+You can set up the database first by following the instructions in [database/README.md](../database/README.md).
+
+Then set the connection string:
 
     export DATABASE_URL="postgresql+asyncpg://user:password@localhost:5432/anchor_db"
 

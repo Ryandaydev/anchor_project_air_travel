@@ -3,3 +3,8 @@ members = [
     "mcp",
     "sdk",
 ]
+
+[tool.uv]
+constraint-dependencies = [
+    "mcp>=1.30.0,<2",
+]

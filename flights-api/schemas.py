@@ -1,9 +1,12 @@
+#region imports
 from datetime import date
 
 from pydantic import BaseModel, ConfigDict
+#endregion
 
-
-class FlightBase(BaseModel):
+#region schemas
+class Flight(BaseModel):
+    id: int
     flight_date: date
     iata_code_marketing_airline: str | None = None
     flight_number_marketing_airline: str | None = None
@@ -28,8 +31,12 @@ class FlightBase(BaseModel):
     iata_code_operating_airline: str | None = None
     tail_number: str | None = None
 
-
-class Flight(FlightBase):
-    id: int
-
     model_config = ConfigDict(from_attributes=True)
+
+# https://www.bts.gov/topics/airlines-and-airports/airline-codes
+class Airline(BaseModel):
+    carrier: str
+    carrier_name: str
+
+
+#endregion
