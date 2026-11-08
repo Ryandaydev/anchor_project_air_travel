@@ -3,9 +3,12 @@
 FastMCP Air Travel Server
 """
 
+#region imports
+
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
+import json
 
 from fastmcp import FastMCP
 
@@ -15,9 +18,16 @@ from air_travel import (
     AsyncAirTravelClient,
 )
 
+#endregion
+
+
+#region setup
+
+
 logging.basicConfig(level=logging.ERROR, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
+API_BASE_URL = "http://127.0.0.1:8000/"
 
 client: AsyncAirTravelClient | None = None
 
@@ -29,7 +39,7 @@ async def app_lifespan(
     """Create and close the shared asynchronous API client."""
     global client
 
-    client = AsyncAirTravelClient()
+    client = AsyncAirTravelClient(base_url=API_BASE_URL)
 
     try:
         yield {}
@@ -37,13 +47,13 @@ async def app_lifespan(
         await client.aclose()
         client = None
 
-
+# create the FastMCP server instance
 mcp = FastMCP(
     "Air Travel Server",
     lifespan=app_lifespan,
 )
 
-
+# 
 def get_client() -> AsyncAirTravelClient:
     """Return the initialized asynchronous API client."""
     if client is None:
@@ -51,6 +61,9 @@ def get_client() -> AsyncAirTravelClient:
 
     return client
 
+#endregion
+
+#region tools
 
 @mcp.tool
 async def get_flights(
@@ -109,6 +122,19 @@ async def get_flights(
 
 
 @mcp.tool
+async def get_airline_codes() -> str:
+    """
+    Get the list of airline carrier codes and names.
+
+    Use this tool to translate a common airline name into the carrier code
+    needed by get_flights. For example, use it to find that
+    "United Airlines" corresponds to "UA" before calling get_flights.
+    """
+    data = await get_client().airlines()
+
+    return json.dumps(data)
+
+@mcp.tool
 async def health_check() -> str:
     """Check if the Air Travel API is running."""
     try:
@@ -120,40 +146,17 @@ async def health_check() -> str:
         return str(e)
 
 
-@mcp.tool
-def get_airline_codes(
-    code: str | None = None,
-) -> dict[str, str] | str:
-    """
-    Return DOT/BTS airline carrier codes mapped to airline names.
+#endregion
 
-    If code is provided, return only that airline.
-    """
-    airline_codes = {
-        "AA": "American Airlines Inc.",
-        "AS": "Alaska Airlines Inc.",
-        "B6": "JetBlue Airways",
-        "DL": "Delta Air Lines Inc.",
-        "F9": "Frontier Airlines Inc.",
-        "G4": "Allegiant Air",
-        "HA": "Hawaiian Airlines Inc.",
-        "NK": "Spirit Air Lines",
-        "SY": "Sun Country Airlines d/b/a MN Airlines",
-        "UA": "United Air Lines Inc.",
-        "WN": "Southwest Airlines Co.",
-    }
+# region Resources
 
-    if code:
-        normalized_code = code.upper()
-        airline = airline_codes.get(normalized_code)
+# endregion
 
-        if not airline:
-            return f"No airline found for code: {normalized_code}"
+# region Prompts
 
-        return f"{normalized_code}: {airline}"
+# endregion
 
-    return airline_codes
-
-
+#region entrypoint
 if __name__ == "__main__":
     mcp.run()
+#endregion
